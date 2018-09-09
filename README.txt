@@ -2,7 +2,7 @@
             ======================
 Q: How long did you spend working on the problem? What did you find to be the
 most difficult part?
-A: Close to 4 hours. Nothing was particularly difficult, but 'subtle'
+A: Close to 4.5 hours. Nothing was particularly difficult, but 'subtle'
 restrictions in Covenants took time to understand. For example, following two
 from same bank 
 
@@ -10,7 +10,15 @@ from same bank
     1,,2,CA
 
 - I also had to read/look up many things along the way (did not list here, but
-  copious amount of help from StackOverflow and Google) 
+  copious amount of help from StackOverflow and Google). Some of them are
+    * cvs module
+    * cvs.reader vs cvs.DictReader. I probably should have used DictReader and
+      DictWriter
+    * How to ignore header rows after reading
+    * Compound keys to dictionary. Best ways to construct them
+    * Rounding up/down of floats using 'decimal' module
+    * Create folders & files using 'os' module
+    and few more minor stuff
 
 Q: How would you modify your data model or code to account for an eventual
 introduction of new, as-of-yet unknown types of covenants, beyond just maximum
@@ -19,7 +27,7 @@ A: Few changes are needed:
     a. Currently the __init__ methods and other methods don't take variable
 keyword arguments (*args, **kwargs). Modify code to do that.
     b. I put 'NOTE' in the code where changes are needed when additional
-restrictions come in. 
+restrictions come in.
 
 
 Q: How would you architect your solution as a production service wherein new
@@ -41,6 +49,48 @@ at a minimum, to be able to request a loan be assigned to a facility, and read
 the funding status of a loan, as well as query the capacities remaining in
 facilities.
 A:
+
+REST APIs: (Assume basepath is: www.domainname.com:port)
+[1] Request a loan:
+HTTP Request Type: GET
+/loanprocessor/v1/loan?amount=XX?state=XX??ssn=XX
+Query Params: amount, origination state, social security (for credit check)
+Return Values: JSON output of Generated loan_id, loan status
+
+Example:
+{
+"result": {"loan_id": 5, "loan_status": Pending}
+}
+
+{
+"result": {"loan_id": 9, "loan_status": Accepted}
+}
+
+
+[2] Status of a loan:
+HTTP Request Type: GET
+/loanprocessor/v1/loan/status?loan_id=XX
+Query Params: loan_id
+Return Values: JSON output of loan status
+{
+"result": {"loan_id": 9, "loan_status": Accepted, "Bank": "Bank Name"}
+}
+
+
+[3] Facility capacity:
+HTTP Request Type: GET
+/loanprocessor/v1/facility/status?facility_id=XX?bank_id=XX
+Query Params: Provide facility_id and bank_id of that facility
+Return Values:
+
+{
+"result":
+    {"facility_id": 2,
+     "bank_name": "Bank Name",
+     "amount": 65034,
+     "expected_yield": 5404,
+    }
+}
 
 
 Q: How might you improve your assignment algorithm if you were permitted to
